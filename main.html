@@ -193,29 +193,41 @@
         </div>
     </section>
 
+    <!-- Connect / Registration Section connected to Live Java Backend -->
     <section id="contact" class="py-24 bg-gray-900">
         <div class="container mx-auto px-6 max-w-4xl">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold tracking-tight">Let's Connect</h2>
                 <p class="text-gray-400 mt-3">Have a project or a research query in mind? Reach out to our engineering team.</p>
             </div>
-            <form action="https://formspree.io/f/xqevenpv" method="POST" class="space-y-6 bg-gray-950 border border-gray-800 p-8 rounded-2xl shadow-xl">
+            
+            <form id="qubexaContactForm" class="space-y-6 bg-gray-950 border border-gray-800 p-8 rounded-2xl shadow-xl">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Full Name</label>
-                        <input type="text" name="name" required placeholder="John Doe" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors">
+                        <input type="text" id="name" required placeholder="John Doe" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white">
                     </div>
                     <div>
                         <label class="block text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Email Address</label>
-                        <input type="email" name="email" required placeholder="john@example.com" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors">
+                        <input type="email" id="email" required placeholder="john@example.com" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white">
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Message</label>
-                    <textarea rows="4" name="message" required placeholder="Describe your project requirements..." class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors"></textarea>
+                    <label class="block text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">Role / Position</label>
+                    <input type="text" id="position" required placeholder="Client / Software Developer / Partner" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition-all shadow-lg shadow-blue-600/20 cursor-pointer">
-                    Send Inquiry
+
+                <div>
+                    <label class="block text-xs font-medium uppercase tracking-wider text-gray-400 mb-2">How Can We Help / Message</label>
+                    <textarea rows="4" id="help" required placeholder="Describe your project requirements or how you'd like to collaborate..." class="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition-colors text-white"></textarea>
+                </div>
+
+                <!-- Status Feedback Notification -->
+                <div id="statusAlert" class="hidden p-4 rounded-lg text-sm font-medium"></div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg transition-all shadow-lg shadow-blue-600/20 cursor-pointer flex items-center justify-center gap-2">
+                    <span>Send Inquiry</span>
                 </button>
             </form>
         </div>
@@ -232,9 +244,51 @@
         </div>
     </footer>
 
+    <!-- Integration Script sending form payload to Render Java Backend API -->
     <script>
-        console.log("Qubexa website updated with Featured IJSREM Research Paper for CEO Rushikesh Gomsale.");
-    </script>
+        document.getElementById("qubexaContactForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
 
+            const submitBtn = document.getElementById("submitBtn");
+            const statusAlert = document.getElementById("statusAlert");
+
+            const payload = {
+                name: document.getElementById("name").value.trim(),
+                userEmail: document.getElementById("email").value.trim(),
+                position: document.getElementById("position").value.trim(),
+                help: document.getElementById("help").value.trim()
+            };
+
+            // Loading state UI feedback
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Sending...</span>';
+            statusAlert.className = "hidden";
+
+            try {
+                const response = await fetch("https://qubexa-backend.onrender.com/api/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    statusAlert.className = "p-4 rounded-lg text-sm font-medium bg-emerald-500/10 border border-emerald-500 text-emerald-400 block";
+                    statusAlert.textContent = "Thank you! Your details have been submitted and confirmation emails have been sent.";
+                    document.getElementById("qubexaContactForm").reset();
+                } else {
+                    throw new Error("API request failed");
+                }
+            } catch (error) {
+                console.error("Transmission Error:", error);
+                statusAlert.className = "p-4 rounded-lg text-sm font-medium bg-rose-500/10 border border-rose-500 text-rose-400 block";
+                statusAlert.textContent = "Failed to send details. Please check your network connection or try again later.";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Send Inquiry</span>';
+            }
+        });
+    </script>
 </body>
 </html>
