@@ -1,11 +1,9 @@
 # Build stage
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# सर्व फाइल्स कॉपी करा
 COPY . .
 
-# pom.xml नक्की शोधून बिल्ड करा
+# Maven द्वारे बिल्ड करणे आणि target फोल्डरमधील Spring Boot JAR शोधणे
 RUN if [ -f "./pom.xml" ]; then \
       mvn clean package -DskipTests; \
     elif [ -f "./demo/pom.xml" ]; then \
@@ -13,7 +11,8 @@ RUN if [ -f "./pom.xml" ]; then \
     elif [ -f "./demo/demo/pom.xml" ]; then \
       mvn -f ./demo/demo/pom.xml clean package -DskipTests; \
     fi && \
-    JAR_FILE=$(find . -name "*.jar" | grep -v "original" | head -n 1) && \
+    JAR_FILE=$(find . -path "*/target/*.jar" ! -name "*.original" ! -name "*-sources.jar" | head -n 1) && \
+    echo "Found executable JAR: $JAR_FILE" && \
     cp "$JAR_FILE" /app/app.jar
 
 # Run stage
