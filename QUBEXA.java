@@ -71,9 +71,8 @@ class ClientManagementCollector {
 
             Message userMessage = new MimeMessage(session);
             userMessage.setFrom(new InternetAddress(adminEmail));
-            userMessage.setRecipients(Message.RecipientType.TO, InternetAddress.parse(userEmail));      
-            userMessage.setSubject("Thank You for Joining Qubexa!");
-
+            userMessage.setRecipients(Message.RecipientType.TO, InternetAddress.parse(userEmail)); 
+        
             String userBody = "Hello " + name + ",\n\n"
                     + "Thank you for reaching out to Qubexa!\n"
                     + "We have received your details:\n"
