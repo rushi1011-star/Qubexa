@@ -3,21 +3,20 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY . .
 
-# Maven द्वारे बिल्ड करणे आणि target फोल्डरमधील Spring Boot JAR शोधणे
-RUN if [ -f "./pom.xml" ]; then \
+# pom.xml शोधून थेट बिल्ड करणे
+RUN if [ -f "pom.xml" ]; then \
       mvn clean package -DskipTests; \
-    elif [ -f "./demo/pom.xml" ]; then \
-      mvn -f ./demo/pom.xml clean package -DskipTests; \
-    elif [ -f "./demo/demo/pom.xml" ]; then \
-      mvn -f ./demo/demo/pom.xml clean package -DskipTests; \
-    fi && \
-    JAR_FILE=$(find . -path "*/target/*.jar" ! -name "*.original" ! -name "*-sources.jar" | head -n 1) && \
-    echo "Found executable JAR: $JAR_FILE" && \
-    cp "$JAR_FILE" /app/app.jar
+    elif [ -f "demo/pom.xml" ]; then \
+      cd demo && mvn clean package -DskipTests && cd ..; \
+    elif [ -f "demo/demo/pom.xml" ]; then \
+      cd demo/demo && mvn clean package -DskipTests && cd ../..; \
+    fi
 
 # Run stage
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-COPY --from=build /app/app.jar app.jar
+
+# target फोल्डरमधील तयार झालेली JAR कॉपी करणे
+COPY --from=build /app/**/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
