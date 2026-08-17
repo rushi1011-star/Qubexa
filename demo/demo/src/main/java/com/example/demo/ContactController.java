@@ -1,8 +1,8 @@
 package com.example.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +35,7 @@ public class ContactController {
     private JavaMailSender mailSender;
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody ClientRequest client) {
+    public ResponseEntity<String> registerUser(@RequestBody ClientRequest client) {
         String adminEmail = "rushikeshgomsale438@gmail.com";
 
         try {
@@ -66,10 +66,12 @@ public class ContactController {
                     + "Team Qubexa");
             mailSender.send(userMsg);
 
-            return "Email Sent Successfully!";
+            return ResponseEntity.ok("Email Sent Successfully!");
+
         } catch (Exception e) {
             e.printStackTrace();
-            return "Error: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Failed to send email: " + e.getMessage());
         }
     }
 }
